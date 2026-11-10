@@ -1,6 +1,6 @@
-# Pixel Aim Lab
+# BNQQ Aim
 
-**Overlay e trigger por cor no Windows.** O programa captura a janela em foco, encontra áreas amarelas, roxas ou vermelhas e desenha caixas transparentes sobre elas. O modo de disparo é opcional.
+**Mira, trigger e overlay por cor no Windows.** O painel reúne controles independentes para mover a mira e disparar. Os três modos usam pixels visíveis e funcionam em um processo separado.
 
 ![Demo com caixas de detecção ao redor dos três alvos](demo.png)
 
@@ -12,13 +12,21 @@
 
 ## Trigger na área de trabalho
 
-Com as dependências instaladas, abra **`Trigger-Amarelo.cmd`**. Aponte para uma área neutra, segure **F8** e passe sobre um elemento amarelo. O programa envia um clique esquerdo no ponto atual do cursor. Para outro clique, saia da cor e entre novamente. **F9** encerra. Esse modo atua no navegador e na área de trabalho, então escolha uma área de teste sem botões ou links importantes.
+Com as dependências instaladas, abra **`Abrir-BNQQ-Aim.cmd`**. No painel, marque amarelo, roxo, vermelho ou uma combinação. Escolha a tecla de ativação, o botão do mouse, o atraso inicial e o intervalo. Clique em **Iniciar trigger**, segure a tecla e passe o cursor sobre a cor. A rajada para ao sair da cor ou soltar a tecla. Use `0` em Cliques para repetir continuamente. **F9** encerra o processo externo.
+
+O padrão é amarelo, F8, botão esquerdo e três cliques. `Trigger-Amarelo.cmd` abre esse perfil sem o painel. O modo desktop atua no navegador e na área de trabalho, usando os pixels visíveis. Em jogos, depende do modo de exibição, de como o jogo controla o cursor e de aceitar cliques do Windows. Use em modos de treino que permitam automação. KovaaK’s e Aimlabs ainda não foram verificados.
 
 ```powershell
-py -3 desktop.py --trigger --colors amarelo roxo vermelho
+py -3 desktop.py --trigger --colors amarelo roxo vermelho --key F8 --button esquerdo --delay-ms 40 --interval-ms 180 --burst 3
 ```
 
 Sem `--trigger`, o terminal apenas registra a cor encontrada. O modo área de trabalho usa `GetPixel` e roda como processo externo, separado dos aplicativos que você usa.
+
+## Mira por cor e FOV
+
+Marque **Habilitar mira por cor** no painel. Segure **F7** por padrão para mover o mouse em direção à região colorida mais próxima. O **raio FOV**, em pixels, limita a busca a um círculo centrado no cursor. A prévia no painel ilustra esse círculo. Aumentar a suavização reduz o movimento por etapa. A mira e o disparo têm teclas independentes. **F9** encerra os dois.
+
+Para experimentar, abra `demo.py` e teste as cores sobre os círculos da janela. O algoritmo reconhece cores de pixels, inclusive elementos da interface com a mesma cor. O comportamento em jogos depende da captura, da posição do cursor e de como o aplicativo recebe movimento do mouse.
 
 ## Overlay com mira central
 

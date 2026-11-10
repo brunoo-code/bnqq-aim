@@ -56,8 +56,17 @@ def bounds(user, window):
     return origin.x, origin.y, origin.x + area.right, origin.y + area.bottom
 
 
-def click(user):
-    events = (Input * 2)(Input(0, MouseInput(flags=2)), Input(0, MouseInput(flags=4)))
+BUTTON_FLAGS = {'esquerdo': (2, 4), 'direito': (8, 16), 'meio': (32, 64)}
+
+
+def move_relative(user, dx, dy):
+    event = Input(0, MouseInput(dx=dx, dy=dy, flags=1))
+    return user.SendInput(1, C.byref(event), C.sizeof(Input)) == 1
+
+
+def click(user, button='esquerdo'):
+    down, up = BUTTON_FLAGS[button]
+    events = (Input * 2)(Input(0, MouseInput(flags=down)), Input(0, MouseInput(flags=up)))
     count = user.SendInput(2, events, C.sizeof(Input))
     if count == 1:
         user.SendInput(1, C.byref(events[1]), C.sizeof(Input))

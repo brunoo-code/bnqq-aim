@@ -1,0 +1,8 @@
+{
+  "colors": ["amarelo"],
+  "key": "F8",
+  "button": "esquerdo",
+  "delay_ms": 40,
+  "interval_ms": 180,
+  "burst": 3
+}

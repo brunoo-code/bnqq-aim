@@ -29,3 +29,17 @@ def detect(rgb, profiles, min_area=55):
             # A pixel from the accepted component must be near the crosshair.
             on_target |= bool(np.any(patch == index))
     return boxes, on_target
+
+
+def aim_step(boxes, center_x, center_y, radius, smoothing):
+    offsets = [(x + w / 2 - center_x, y + h / 2 - center_y) for _, x, y, w, h in boxes]
+    candidates = [(dx, dy) for dx, dy in offsets if dx*dx + dy*dy <= radius*radius]
+    if not candidates:
+        return None
+    dx, dy = min(candidates, key=lambda offset: offset[0]**2 + offset[1]**2)
+    if dx*dx + dy*dy <= 4:
+        return None
+    step = round(dx / smoothing), round(dy / smoothing)
+    if step == (0, 0):
+        step = (int(np.sign(dx)), 0) if abs(dx) >= abs(dy) else (0, int(np.sign(dy)))
+    return tuple(max(-35, min(35, axis)) for axis in step)
