@@ -91,6 +91,22 @@ def main():
         variable.trace_add('write', redraw)
     redraw()
 
+    def editable_widgets(container):
+        for widget in container.winfo_children():
+            if isinstance(widget, (ttk.Checkbutton, ttk.Entry, ttk.Combobox, tk.Scale)):
+                yield widget
+            else:
+                yield from editable_widgets(widget)
+
+    settings_widgets = tuple(editable_widgets(panel)) + tuple(editable_widgets(aim_panel))
+
+    def lock_settings(locked):
+        for widget in settings_widgets:
+            if isinstance(widget, tk.Scale):
+                widget.configure(state='disabled' if locked else 'normal')
+            else:
+                widget.state(['disabled' if locked else '!disabled'])
+
     status = tk.StringVar(value='Parado · F9 encerra o processo externo')
     worker = None
     stop_event = Event()
@@ -118,9 +134,15 @@ def main():
         except OSError as error:
             messagebox.showerror('Falha ao iniciar', str(error))
             return
+        lock_settings(True)
         start_button.state(['disabled'])
         stop_button.state(['!disabled'])
-        status.set('Ativo · segure a tecla de cada função · F9 encerra')
+        active_keys = []
+        if trigger_enabled.get():
+            active_keys.append(f'Disparo {config["key"]}')
+        if config['aim_enabled']:
+            active_keys.append(f'Mira {config["aim_key"]}')
+        status.set(' · '.join([*active_keys, 'Pare para editar', 'F9 encerra']))
         root.iconify()
 
     def stop():
@@ -131,6 +153,7 @@ def main():
         if worker is not None and worker.done():
             error = worker.exception()
             worker = None
+            lock_settings(False)
             start_button.state(['!disabled'])
             stop_button.state(['disabled'])
             status.set('Parado · F9 encerra o processo externo')
