@@ -28,9 +28,9 @@ Sem `--trigger`, o terminal apenas registra a cor encontrada. O modo área de tr
 
 ## Mira por cor e FOV
 
-Marque **Habilitar mira por cor** no painel. Segure **F7** por padrão para mover o mouse em direção à região colorida mais próxima. O **raio FOV**, em pixels, limita a busca a um círculo centrado no cursor. A prévia no painel ilustra esse círculo. Aumentar a suavização reduz o movimento por etapa. A mira e o disparo têm teclas independentes. **F9** encerra os dois.
+Marque **Habilitar mira por cor** no painel. Segure **F7** por padrão para mover o mouse em direção à região colorida mais próxima. O **raio FOV**, em pixels, limita a busca a um círculo centrado no cursor. A prévia no painel ilustra esse círculo. Use suavização **1** para a resposta mais forte. Valores maiores reduzem o movimento por etapa. A mira e o disparo têm teclas independentes. **F9** encerra os dois.
 
-Para experimentar, abra `demo.py` e teste as cores sobre os círculos da janela. O algoritmo reconhece cores de pixels, inclusive elementos da interface com a mesma cor. O comportamento em jogos depende da captura, da posição do cursor e de como o aplicativo recebe movimento do mouse.
+Para experimentar, abra `demo.py` e teste com a cor vermelha nos alvos de 10 px. A demo separa acertos e cliques fora do alvo. O algoritmo reconhece cores de pixels, inclusive elementos da interface com a mesma cor. O comportamento em jogos depende da captura, da posição do cursor e de como o aplicativo recebe movimento do mouse.
 
 ## Overlay com mira central
 

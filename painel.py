@@ -70,7 +70,7 @@ def main():
     values['aim_key'] = tk.StringVar(value=settings['aim_key'])
     ttk.Label(aim_panel, text='Tecla da mira').grid(row=3, column=0, sticky='w')
     ttk.Combobox(aim_panel, textvariable=values['aim_key'], values=list(KEYS), state='readonly', width=10).grid(row=3, column=1, sticky='e')
-    for row, (name, label, low, high) in enumerate((('fov_px', 'Raio FOV', 25, 240), ('smoothing', 'Suavização', 1, 12)), 4):
+    for row, (name, label, low, high) in enumerate((('fov_px', 'Raio FOV', 25, 240), ('smoothing', 'Suavização (1 = forte)', 1, 12)), 4):
         values[name] = tk.IntVar(value=settings[name])
         ttk.Label(aim_panel, textvariable=values[name], foreground=accent).grid(row=row, column=1, sticky='e')
         slider = tk.Scale(aim_panel, label=label, variable=values[name], from_=low, to=high, showvalue=False,
