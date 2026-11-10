@@ -10,6 +10,10 @@
 | `roxo` | `#A63FFF` | Violeta e roxo saturados |
 | `vermelho` | `#F02B3E` | As duas pontas da escala de matiz |
 
+## Executável para Windows x64
+
+Baixe **BNQQ-Aim.exe** na [página de versões](https://github.com/brunoo-code/bnqq-aim/releases). O executável inclui o painel e a demo e abre sem instalar Python. Use **Abrir demo de alvos** para experimentar em uma janela com contador de cliques.
+
 ## Trigger na área de trabalho
 
 Com as dependências instaladas, abra **`Abrir-BNQQ-Aim.cmd`**. No painel, marque amarelo, roxo, vermelho ou uma combinação. Escolha a tecla de ativação, o botão do mouse, o atraso inicial e o intervalo. Clique em **Iniciar trigger**, segure a tecla e passe o cursor sobre a cor. A rajada para ao sair da cor ou soltar a tecla. Use `0` em Cliques para repetir continuamente. **F9** encerra o processo externo.

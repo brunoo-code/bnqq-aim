@@ -7,6 +7,7 @@ from ctypes import wintypes as W
 import json
 from pathlib import Path
 import sys
+from threading import Event
 import time
 
 import numpy as np
@@ -99,7 +100,18 @@ def main():
             type(smoothing) is not int or not 1 <= smoothing <= 12):
         parser.error('confira cores, tecla, botão e tempos. O intervalo mínimo é 50 ms.')
 
+    run(settings, args.trigger, Event())
+
+
+def run(settings, trigger, stop, key_down=None):
+    colors, key, button = (settings[name] for name in ('colors', 'key', 'button'))
+    delay, interval, burst = (settings[name] for name in ('delay_ms', 'interval_ms', 'burst'))
+    aim_enabled, aim_key = settings['aim_enabled'], settings['aim_key']
+    radius, smoothing = settings['fov_px'], settings['smoothing']
     user = windows_api()
+    if key_down is None:
+        def key_down(code):
+            return bool(user.GetAsyncKeyState(code) & 0x8000)
     user.GetDC.argtypes, user.GetDC.restype = (W.HWND,), W.HDC
     user.ReleaseDC.argtypes, user.ReleaseDC.restype = (W.HWND, W.HDC), C.c_int
     get_pixel = C.WinDLL('gdi32', use_last_error=True).GetPixel
@@ -114,18 +126,18 @@ def main():
     print('Monitorando: ' + ', '.join(colors), flush=True)
     print(f'Segure {key} para armar (se habilitado). F9 encerra.', flush=True)
     try:
-        while not user.GetAsyncKeyState(0x78) & 0x8000:
+        while not stop.is_set() and not key_down(0x78):
             color = None
             if user.GetCursorPos(C.byref(cursor)):
                 color = match_color(get_pixel(dc, cursor.x, cursor.y), colors)
                 now = time.monotonic()
-                if aim_enabled and now - last_aim >= 0.045 and user.GetAsyncKeyState(KEYS[aim_key]) & 0x8000:
+                if aim_enabled and now - last_aim >= 0.045 and key_down(KEYS[aim_key]):
                     last_aim = now
                     x, y = cursor.x, cursor.y
                     frame = ImageGrab.grab(bbox=(x-radius, y-radius, x+radius+1, y+radius+1), all_screens=True)
                     boxes, _ = detect(np.asarray(frame), colors, min_area=18)
                     step = aim_step(boxes, radius, radius, radius, smoothing)
-                    if step and user.GetAsyncKeyState(KEYS[aim_key]) & 0x8000:
+                    if step and not stop.is_set() and key_down(KEYS[aim_key]):
                         current = W.POINT()
                         if user.GetCursorPos(C.byref(current)) and (current.x, current.y) == (x, y):
                             if move_relative(user, *step):
@@ -134,14 +146,13 @@ def main():
             if color and color != previous:
                 print(f'{color.upper()} em ({cursor.x}, {cursor.y})', flush=True)
             previous = color
-            armed = args.trigger and bool(user.GetAsyncKeyState(KEYS[key]) & 0x8000)
+            armed = trigger and not stop.is_set() and key_down(KEYS[key])
             if state.ready(color is not None, armed, time.monotonic()):
                 if click(user, button):
                     print('Clique enviado.', flush=True)
                 else:
-                    args.trigger = False
-                    print('Clique bloqueado pelo Windows. Modo visual mantido.', file=sys.stderr)
-            time.sleep(0.02)
+                    raise RuntimeError('O Windows bloqueou o envio do clique.')
+            stop.wait(0.02)
     except KeyboardInterrupt:
         pass
     finally:

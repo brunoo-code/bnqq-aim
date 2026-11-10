@@ -2,24 +2,26 @@
 
 import json
 from pathlib import Path
-import subprocess
-import sys
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from desktop import DEFAULTS, KEYS
-from overlay import BUTTON_FLAGS
+from demo import open_demo
+from desktop import DEFAULTS, KEYS, run
+from overlay import BUTTON_FLAGS, windows_api
 from vision import PROFILES
 
 
 def main():
-    base = Path(__file__).resolve().parent
-    profile = base / 'trigger.local.json'
+    import os
+    profile = Path(os.environ.get('LOCALAPPDATA', Path.home())) / 'BNQQ Aim' / 'trigger.json'
     settings = DEFAULTS.copy()
     try:
         settings.update(json.loads(profile.read_text(encoding='utf-8')))
     except (OSError, ValueError, TypeError):
         pass
+    windows_api()
     root = tk.Tk()
     root.title('BNQQ Aim | Configuração')
     root.resizable(False, False)
@@ -91,6 +93,8 @@ def main():
 
     status = tk.StringVar(value='Parado · F9 encerra o processo externo')
     worker = None
+    stop_event = Event()
+    executor = ThreadPoolExecutor(max_workers=1)
 
     def start():
         nonlocal worker
@@ -104,11 +108,10 @@ def main():
                     config['interval_ms'] < 50 or config['burst'] < 0 or
                     not (trigger_enabled.get() or config['aim_enabled'])):
                 raise ValueError
+            profile.parent.mkdir(parents=True, exist_ok=True)
             profile.write_text(json.dumps(config, indent=2), encoding='utf-8')
-            command = [sys.executable, str(base / 'desktop.py'), '--config', str(profile)]
-            if trigger_enabled.get():
-                command.append('--trigger')
-            worker = subprocess.Popen(command)
+            stop_event.clear()
+            worker = executor.submit(run, config, trigger_enabled.get(), stop_event)
         except ValueError:
             messagebox.showerror('Confira a configuração', 'Escolha uma cor e informe números válidos. Intervalo mínimo de 50 ms.')
             return
@@ -121,20 +124,24 @@ def main():
         root.iconify()
 
     def stop():
-        if worker is not None and worker.poll() is None:
-            worker.terminate()
+        stop_event.set()
 
     def poll():
         nonlocal worker
-        if worker is not None and worker.poll() is not None:
+        if worker is not None and worker.done():
+            error = worker.exception()
             worker = None
             start_button.state(['!disabled'])
             stop_button.state(['disabled'])
             status.set('Parado · F9 encerra o processo externo')
+            if error:
+                root.deiconify()
+                messagebox.showerror('BNQQ Aim', str(error), parent=root)
         root.after(250, poll)
 
     def close():
         stop()
+        executor.shutdown(wait=False)
         root.destroy()
 
     start_button = ttk.Button(panel, text='Iniciar BNQQ Aim', command=start, style='Accent.TButton')
@@ -142,6 +149,7 @@ def main():
     stop_button = ttk.Button(panel, text='Parar', command=stop, state='disabled')
     stop_button.grid(row=9, column=1, sticky='ew', padx=(16, 0), pady=(15, 4))
     ttk.Label(panel, textvariable=status).grid(row=10, columnspan=2, sticky='w', pady=(7, 0))
+    ttk.Button(aim_panel, text='Abrir demo de alvos', command=lambda: open_demo(root)).grid(row=6, columnspan=2, sticky='ew', pady=(8, 0))
     root.protocol('WM_DELETE_WINDOW', close)
     poll()
     root.mainloop()
