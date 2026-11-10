@@ -10,7 +10,17 @@
 | `roxo` | `#A63FFF` | Violeta e roxo saturados |
 | `vermelho` | `#F02B3E` | As duas pontas da escala de matiz |
 
-## Experimente em duas janelas
+## Trigger na área de trabalho
+
+Com as dependências instaladas, abra **`Trigger-Amarelo.cmd`**. Aponte para uma área neutra, segure **F8** e passe sobre um elemento amarelo. O programa envia um clique esquerdo no ponto atual do cursor. Para outro clique, saia da cor e entre novamente. **F9** encerra. Esse modo atua no navegador e na área de trabalho, então escolha uma área de teste sem botões ou links importantes.
+
+```powershell
+py -3 desktop.py --trigger --colors amarelo roxo vermelho
+```
+
+Sem `--trigger`, o terminal apenas registra a cor encontrada. O modo área de trabalho usa `GetPixel` e roda como processo externo, separado dos aplicativos que você usa.
+
+## Overlay com mira central
 
 Use Python 3.10+ no Windows. Na pasta do projeto, instale as dependências e abra a demo:
 
